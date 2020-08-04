@@ -15,7 +15,8 @@ struct ContentView: View {
     @State var rGuess: Double
     @State var gGuess: Double
     @State var bGuess: Double
-
+    @State var showAlert = false
+    
     var body: some View {
         VStack {
             HStack {
@@ -25,26 +26,51 @@ struct ContentView: View {
                 }
                 VStack {
                     Color(red: rGuess, green: gGuess, blue: bGuess)
-                    Text("R: 127 G: 127 B: 127")
+                    Text("R: \(Int(rGuess * 255.0))"
+                      + "  G: \(Int(gGuess * 255.0))"
+                      + "  B: \(Int(bGuess * 255.0))")
                 }
             }
-            Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/) {
+            Button(action: { self.showAlert = true }) {
                 Text("Hit me!")
             }
-            HStack {
-                Text("0")
-                    .foregroundColor(.red)
-                Slider(value: $rGuess)
-                Text("255")
-                    .foregroundColor(.red)
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("Your score"), message: Text(String(computeScore())))
             }
-            .padding(.horizontal)
+            .padding()
+
+            ColorSlider(value: $rGuess, textColor: .red)
+            ColorSlider(value: $gGuess, textColor: .green)
+            ColorSlider(value: $bGuess, textColor: .blue)
         }
+    }
+    
+    func computeScore() -> Int {
+        let rDiff = rGuess - rTarget
+        let gDiff = gGuess - gTarget
+        let bDiff = bGuess - bTarget
+        let diff = sqrt((rDiff * rDiff + gDiff * gDiff + bDiff * bDiff) / 3.0)
+        return lround((1.0 - diff) * 100)
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(rGuess: 0.7, gGuess: 0.5, bGuess: 0.5).previewLayout(.fixed(width: 568, height: 320))
+        ContentView(rGuess: 0.5, gGuess: 0.5, bGuess: 0.5).previewLayout(.fixed(width: 568, height: 320))
+    }
+}
+
+struct ColorSlider: View {
+    @Binding var value: Double
+    var textColor: Color
+    var body: some View {
+        HStack {
+            Text("0")
+                .foregroundColor(textColor)
+            Slider(value: $value)
+            Text("255")
+                .foregroundColor(textColor)
+        }
+        .padding(.horizontal)
     }
 }
